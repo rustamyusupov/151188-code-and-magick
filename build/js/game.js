@@ -395,20 +395,82 @@ window.Game = (function() {
      * Отрисовка экрана паузы.
      */
     _drawPauseScreen: function() {
+      var message = [];
+
       switch (this.state.currentStatus) {
         case Verdict.WIN:
-          console.log('you have won!');
+          message = ['Вы выиграли!', 'Нажмите пробел', 'для продолжения.'];
+          this._drawMessageBox(message);
+
           break;
+
         case Verdict.FAIL:
-          console.log('you have failed!');
+          message = ['Вы проиграли!', 'Нажмите пробел', 'для продолжения.'];
+          this._drawMessageBox(message);
+
           break;
+
         case Verdict.PAUSE:
-          console.log('game is on pause!');
+          message = ['Игра на паузе.', 'Нажмите пробел', 'для продолжения.'];
+          this._drawMessageBox(message);
+
           break;
+
         case Verdict.INTRO:
-          console.log('welcome to the game! Press Space to start');
+          message = ['Я умею перемещаться', 'и летать по нажатию', 'на стрелки. А если нажать', 'шифт, я выстрелю файрболом.'];
+          this._drawMessageBox(message, 300, 238);
+
           break;
       }
+    },
+
+    /**
+     * Отрисовка окна сообщения.
+     */
+    _drawMessageBox: function(message, x, y) {
+      var lineIndent = 20;
+      var fontName = 'PT Mono';
+      var fontSize = '16px';
+      var textColor = '#000000';
+      var textIndentX = 29;
+      var textIndentY = 100;
+      var boxColor = '#FFFFFF';
+      var shadowIndent = 10;
+      var shadowBoxColor = 'rgba(0, 0, 0, 0.7)';
+      x = x || 300;
+      y = y || 255;
+
+      // Тень
+      this._drawRect(x + shadowIndent, y + shadowIndent, shadowBoxColor);
+
+      // Многоугольник
+      this._drawRect(x, y, boxColor);
+
+      // Текст
+      this.ctx.fillStyle = textColor;
+      this.ctx.font = fontSize + ' ' + fontName;
+
+      message.forEach(function(item, index) {
+        this.ctx.fillText(item, x + textIndentX, y - textIndentY + lineIndent * index);
+      }, this);
+    },
+
+    /**
+     * Отрисовка многоугольника для сообщения.
+     */
+    _drawRect: function(x, y, color) {
+      var leftSideTilt = 16;
+      var leftSideLength = 138;
+      var topSideLength = 291;
+      var bottomSideTilt = 16;
+
+      this.ctx.fillStyle = color;
+      this.ctx.beginPath();
+      this.ctx.moveTo(x, y);
+      this.ctx.lineTo(x + leftSideTilt, y - leftSideLength);
+      this.ctx.lineTo(x + topSideLength, y - leftSideLength);
+      this.ctx.lineTo(x + topSideLength, y - bottomSideTilt);
+      this.ctx.fill();
     },
 
     /**
