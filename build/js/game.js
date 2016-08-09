@@ -399,25 +399,25 @@ window.Game = (function() {
 
       switch (this.state.currentStatus) {
         case Verdict.WIN:
-          message = ['Вы выиграли!', 'Нажмите пробел', 'для продолжения.'];
+          message = 'Вы выиграли! Нажмите пробел для продолжения.';
           this._drawMessageBox(message);
 
           break;
 
         case Verdict.FAIL:
-          message = ['Вы проиграли!', 'Нажмите пробел', 'для продолжения.'];
+          message = 'Вы проиграли! Нажмите пробел для продолжения.';
           this._drawMessageBox(message);
 
           break;
 
         case Verdict.PAUSE:
-          message = ['Игра на паузе.', 'Нажмите пробел', 'для продолжения.'];
+          message = 'Игра на паузе. Нажмите пробел для продолжения.';
           this._drawMessageBox(message);
 
           break;
 
         case Verdict.INTRO:
-          message = ['Я умею перемещаться', 'и летать по нажатию', 'на стрелки. А если нажать', 'шифт, я выстрелю файрболом.'];
+          message = 'Я умею перемещаться и летать по нажатию на стрелки. А если нажать шифт, я выстрелю файрболом.';
           this._drawMessageBox(message, 300, 238);
 
           break;
@@ -428,41 +428,32 @@ window.Game = (function() {
      * Отрисовка окна сообщения.
      */
     _drawMessageBox: function(message, x, y) {
-      var lineIndent = 20;
-      var fontName = 'PT Mono';
-      var fontSize = '16px';
-      var textColor = '#000000';
-      var textIndentX = 29;
-      var textIndentY = 100;
       var boxColor = '#FFFFFF';
-      var shadowIndent = 10;
       var shadowBoxColor = 'rgba(0, 0, 0, 0.7)';
+      var shadowIndent = 10;
+      var boxWidth = 260;
       x = x || 300;
       y = y || 255;
 
       // Тень
-      this._drawRect(x + shadowIndent, y + shadowIndent, shadowBoxColor);
+      this._drawRect(shadowBoxColor, boxWidth, x + shadowIndent, y + shadowIndent);
 
       // Многоугольник
-      this._drawRect(x, y, boxColor);
+      this._drawRect(boxColor, boxWidth, x, y);
 
       // Текст
-      this.ctx.fillStyle = textColor;
-      this.ctx.font = fontSize + ' ' + fontName;
-
-      message.forEach(function(item, index) {
-        this.ctx.fillText(item, x + textIndentX, y - textIndentY + lineIndent * index);
-      }, this);
+      this._drawText(message, boxWidth, x, y);
     },
 
     /**
      * Отрисовка многоугольника для сообщения.
      */
-    _drawRect: function(x, y, color) {
+    _drawRect: function(color, width, x, y) {
       var leftSideTilt = 16;
-      var leftSideLength = 138;
-      var topSideLength = 291;
       var bottomSideTilt = 16;
+      var leftSideLength = 138;
+      var textIndentX = 50;
+      var topSideLength = width + textIndentX;
 
       this.ctx.fillStyle = color;
       this.ctx.beginPath();
@@ -471,6 +462,40 @@ window.Game = (function() {
       this.ctx.lineTo(x + topSideLength, y - leftSideLength);
       this.ctx.lineTo(x + topSideLength, y - bottomSideTilt);
       this.ctx.fill();
+    },
+
+    /**
+     * Отрисовка текста на многоугольнике.
+     */
+    _drawText: function(message, width, x, y) {
+      var fontName = 'PT Mono';
+      var fontSize = '16px';
+      var fontColor = '#000000';
+      var textIndentX = 35;
+      var textIndentY = 120;
+      var lineIndent = 0;
+      var lineHeight = 20;
+      var currentLine = '';
+      var words = message.split(' ');
+
+      this.ctx.fillStyle = fontColor;
+      this.ctx.font = fontSize + ' ' + fontName;
+
+      for (var i = 0; i <= words.length; i++) {
+        var line = currentLine + words[i];
+        var lineWidth = this.ctx.measureText(line).width;
+
+        if (lineWidth < width && i !== words.length) {
+          currentLine += words[i] + ' ';
+        } else {
+          currentLine = currentLine.slice(0, -1);
+          lineIndent += lineHeight;
+
+          this.ctx.fillText(currentLine, x + textIndentX, y - textIndentY + lineIndent);
+
+          currentLine = words[i] + ' ';
+        }
+      }
     },
 
     /**
