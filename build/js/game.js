@@ -418,7 +418,7 @@ window.Game = (function() {
 
         case Verdict.INTRO:
           message = 'Я умею перемещаться и летать по нажатию на стрелки. А если нажать шифт, я выстрелю файрболом.';
-          this._drawMessageBox(message, 300, 238);
+          this._drawMessageBox(message, 300, 235);
 
           break;
       }
@@ -426,60 +426,71 @@ window.Game = (function() {
 
     /**
      * Отрисовка окна сообщения.
+     * @param {string} message сообщение.
+     * @param {number} [x] координата по оси абцисс левой нижней точки окна сообщения.
+     * @param {number} [y] координата по оси ординат левой нижней точки окна сообщения.
      */
     _drawMessageBox: function(message, x, y) {
-      var boxColor = '#FFFFFF';
-      var shadowBoxColor = 'rgba(0, 0, 0, 0.7)';
-      var shadowIndent = 10;
-      var boxWidth = 260;
-      x = x || 300;
-      y = y || 255;
+      var RECT_COLOR = '#FFFFFF';
+      var SHADOW_COLOR = 'rgba(0, 0, 0, 0.7)';
+      var SHADOW_INDENT = 10;
+      var TEXT_WIDTH = 260;
+      var TEXT_PADDING_LEFT = 30;
+      var TEXT_PADDING_TOP = 10;
+      var TEXT_PADDING_BOTTOM = 30;
+      var RECT_WIDTH = TEXT_WIDTH + TEXT_PADDING_LEFT;
+      var LINE_HEIGHT_MULTIPLIER = 1.4;
+      var font = {
+        NAME: 'PT Mono',
+        SIZE: '16px',
+        COLOR: '#000000',
+        lineHeight: 0
+      };
+      var coordinates = {
+        x: x || 300,
+        y: y || 255
+      };
+
+      // Шрифт
+      this.ctx.font = font.SIZE + ' ' + font.NAME;
+
+      // Высота строки
+      font.lineHeight = Math.round(parseInt(font.SIZE, 10) * LINE_HEIGHT_MULTIPLIER);
+
+      // Разбивка сообщения на строки
+      var textLines = this._splitMessage(message, TEXT_WIDTH);
+
+      // Высота многоугольника = высота текста (кол-во строк * высоту строки) + оступы
+      var rectHeight = textLines.length * font.lineHeight + TEXT_PADDING_TOP + TEXT_PADDING_BOTTOM;
 
       // Тень
-      this._drawRect(shadowBoxColor, boxWidth, x + shadowIndent, y + shadowIndent);
+      var shadowCoordinates = {
+        x: coordinates.x + SHADOW_INDENT,
+        y: coordinates.y + SHADOW_INDENT
+      };
+      this._drawRect(shadowCoordinates, RECT_WIDTH, rectHeight, SHADOW_COLOR);
 
       // Многоугольник
-      this._drawRect(boxColor, boxWidth, x, y);
+      this._drawRect(coordinates, RECT_WIDTH, rectHeight, RECT_COLOR);
 
       // Текст
-      this._drawText(message, boxWidth, x, y);
+      var TEXT_INDENT_Y = rectHeight - TEXT_PADDING_TOP;
+      var textCoordinates = {
+        x: coordinates.x + TEXT_PADDING_LEFT,
+        y: coordinates.y - TEXT_INDENT_Y
+      };
+      this._drawText(textCoordinates, textLines, font);
     },
 
     /**
-     * Отрисовка многоугольника для сообщения.
+     * Разбивка сообщения на строки.
+     * @param {string} message сообщение.
+     * @param {number} width ширина текста.
      */
-    _drawRect: function(color, width, x, y) {
-      var leftSideTilt = 16;
-      var bottomSideTilt = 16;
-      var leftSideLength = 138;
-      var textIndentX = 50;
-      var topSideLength = width + textIndentX;
-
-      this.ctx.fillStyle = color;
-      this.ctx.beginPath();
-      this.ctx.moveTo(x, y);
-      this.ctx.lineTo(x + leftSideTilt, y - leftSideLength);
-      this.ctx.lineTo(x + topSideLength, y - leftSideLength);
-      this.ctx.lineTo(x + topSideLength, y - bottomSideTilt);
-      this.ctx.fill();
-    },
-
-    /**
-     * Отрисовка текста на многоугольнике.
-     */
-    _drawText: function(message, width, x, y) {
-      var fontName = 'PT Mono';
-      var fontSize = '16px';
-      var fontColor = '#000000';
-      var textIndentX = 35;
-      var textIndentY = 120;
-      var lineIndent = 0;
-      var lineHeight = 20;
+    _splitMessage: function(message, width) {
       var currentLine = '';
+      var textLines = [];
       var words = message.split(' ');
-
-      this.ctx.fillStyle = fontColor;
-      this.ctx.font = fontSize + ' ' + fontName;
 
       for (var i = 0; i <= words.length; i++) {
         var line = currentLine + words[i];
@@ -488,14 +499,58 @@ window.Game = (function() {
         if (lineWidth < width && i !== words.length) {
           currentLine += words[i] + ' ';
         } else {
-          currentLine = currentLine.slice(0, -1);
-          lineIndent += lineHeight;
-
-          this.ctx.fillText(currentLine, x + textIndentX, y - textIndentY + lineIndent);
+          textLines.push( currentLine.slice(0, -1) );
 
           currentLine = words[i] + ' ';
         }
       }
+
+      return textLines;
+    },
+
+    /**
+     * Отрисовка многоугольника для сообщения.
+     * @param {object} coordinates координаты по оси абцисс и ординат левой нижней точки многоугольника.
+     * @param {number} width ширина многоугольника.
+     * @param {number} height высота многоугольника.
+     * @param {string} color цвет многоугольника.
+     */
+    _drawRect: function(coordinates, width, height, color) {
+      var TILT_LEFT_SIDE = 16;
+      var TILT_BOTTOM_SIDE = 16;
+      var x2 = coordinates.x + TILT_LEFT_SIDE;
+      var y2 = coordinates.y - height;
+      var x3 = x2 + width;
+      var y3 = y2;
+      var x4 = x3;
+      var y4 = y3 + height - TILT_BOTTOM_SIDE;
+
+      this.ctx.fillStyle = color;
+      this.ctx.beginPath();
+      this.ctx.moveTo(coordinates.x, coordinates.y);
+      this.ctx.lineTo(x2, y2);
+      this.ctx.lineTo(x3, y3);
+      this.ctx.lineTo(x4, y4);
+      this.ctx.fill();
+      this.ctx.closePath();
+    },
+
+    /**
+     * Отрисовка текста на многоугольнике.
+     * @param {object} coordinates координаты по оси абцисс и ординат.
+     * @param {array} lines строки сообщения.
+     * @param {object} font шрифт.
+     */
+    _drawText: function(coordinates, lines, font) {
+      var lineIndent = 0;
+
+      this.ctx.fillStyle = font.COLOR;
+
+      lines.forEach(function(item) {
+        lineIndent += font.lineHeight;
+
+        this.ctx.fillText(item, coordinates.x, coordinates.y + lineIndent);
+      }, this);
     },
 
     /**
