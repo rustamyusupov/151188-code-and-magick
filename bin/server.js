@@ -48,7 +48,7 @@ app.
         return;
       }
 
-      res.jsonp(data);
+      res.jsonp(JSON.parse(data));
     });
   }).
   get('*', serve);
