@@ -24,4 +24,6 @@ require('./reviews');
   window.form.onClose = function() {
     game.setDeactivated(false);
   };
+
+  window.reviews.load();
 })();
