@@ -1,3 +1,5 @@
+'use strict';
+
 var getMessage = function(a, b) {
   var result = '';
 
