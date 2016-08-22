@@ -1,29 +1,26 @@
 'use strict';
 
-require('./form');
-require('./game');
-require('./reviews');
+var form = require('./form');
+var Game = require('./game');
+var loadReviews = require('./reviews');
 
-(function() {
-  var game = new window.Game(document.querySelector('.demo'));
-  game.initializeLevelAndStart();
-  game.setGameStatus(window.Game.Verdict.INTRO);
+var game = new Game(document.querySelector('.demo'));
+var formOpenButton = document.querySelector('.reviews-controls-new');
 
-  var formOpenButton = document.querySelector('.reviews-controls-new');
+formOpenButton.onclick = function(event) {
+  event.preventDefault();
 
-  /** @param {MouseEvent} evt */
-  formOpenButton.onclick = function(evt) {
-    evt.preventDefault();
+  form.open(function() {
+    game.setGameStatus(Game.Verdict.PAUSE);
+    game.setDeactivated(true);
+  });
+};
 
-    window.form.open(function() {
-      game.setGameStatus(window.Game.Verdict.PAUSE);
-      game.setDeactivated(true);
-    });
-  };
+form.onClose = function() {
+  game.setDeactivated(false);
+};
 
-  window.form.onClose = function() {
-    game.setDeactivated(false);
-  };
+game.initializeLevelAndStart();
+game.setGameStatus(Game.Verdict.INTRO);
 
-  window.reviews.load();
-})();
+loadReviews();
