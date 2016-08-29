@@ -1,7 +1,7 @@
 'use strict';
 
 var load = require('./load');
-var addReview = require('./review');
+var Review = require('./review');
 
 var reviewsFilter = document.querySelector('.reviews-filter');
 
@@ -44,7 +44,8 @@ function getReviews(data) {
 
   // добавление отзывов
   data.forEach(function(item) {
-    reviewsFragment.appendChild(addReview(item));
+    var review = new Review(item);
+    reviewsFragment.appendChild(review.element);
   });
 
   // вставка отзывов
