@@ -1,7 +1,6 @@
 'use strict';
 
 var utils = require('./utils');
-
 var reviewTemplate = document.getElementById('review-template');
 var reviewClone = (reviewTemplate.content || reviewTemplate).querySelector('.review');
 
@@ -22,38 +21,90 @@ var reviewClone = (reviewTemplate.content || reviewTemplate).querySelector('.rev
  */
 
 /**
- * добавляет отзыв
- * @param {ReviewData} data отзыв
+ * конструктор объекта Review
+ * @param {ReviewData} data
+ * @constructor
  */
-function addReview(data) {
-  var review = reviewClone.cloneNode(true);
-  var reviewImage = review.querySelector('.review-author');
-  var reviewRating = review.querySelector('.review-rating');
-  var reviewDescription = review.querySelector('.review-text');
-  var ratings = {
-    2: 'two',
-    3: 'three',
-    4: 'four',
-    5: 'five'
-  };
+var Review = function(data) {
+  this.data = data;
 
-  if (ratings[data.rating]) {
-    reviewRating.classList.add('review-rating-' + ratings[data.rating]);
+  this.getElements();
+
+  this.setAnswerYes = this.setQuizAnswer.bind(this, true);
+  this.setAnswerNo = this.setQuizAnswer.bind(this, false);
+
+  this.description.textContent = this.data.description;
+  this.setRating(this.data.rating);
+  this.loadImage();
+
+  this.quizAnswerYes.addEventListener('click', this.setAnswerYes);
+  this.quizAnswerNo.addEventListener('click', this.setAnswerNo);
+};
+
+/**
+ * константы
+ */
+Review.prototype.IMAGE_SIZE = '124px';
+Review.prototype.LOAD_FAILURE = 'review-load-failure';
+Review.prototype.ACTIVE_ANSWER = 'review-quiz-answer-active';
+
+/**
+ * получает элементы
+ */
+Review.prototype.getElements = function() {
+  this.element = reviewClone.cloneNode(true);
+  this.description = this.element.querySelector('.review-text');
+  this.image = this.element.querySelector('.review-author');
+  this.rating = this.element.querySelector('.review-rating');
+  this.quizAnswerYes = this.element.querySelector('.review-quiz-answer-yes');
+  this.quizAnswerNo = this.element.querySelector('.review-quiz-answer-no');
+};
+
+/**
+ * устанавливает рейтинг
+ * @param {number} number
+ */
+Review.prototype.setRating = function(number) {
+  var ratings = ['two', 'three', 'four', 'five'];
+
+  // рейтинг один по умолчанию, поэтому отсчет с двух
+  if (ratings[number - 2]) {
+    this.rating.classList.add('review-rating-' + ratings[number - 2]);
   }
-  reviewDescription.textContent = data.description;
+};
 
-  utils.loadImage(data.author.picture, function(isOk) {
-    if (isOk) {
-      reviewImage.src += data.author.picture;
-      reviewImage.width = '124px';
-      reviewImage.height = '124px';
+/**
+ * загружает изображение
+ */
+Review.prototype.loadImage = function() {
+  function isOk(isLoad) {
+    if (isLoad) {
+      this.image.src = this.data.author.picture;
+      this.image.width = this.image.height = this.IMAGE_SIZE;
     } else {
-      reviewImage.src = '';
-      review.classList.add('review-load-failure');
+      this.image.src = '';
+      this.element.classList.add(this.LOAD_FAILURE);
     }
-  });
+  }
 
-  return review;
-}
+  utils.loadImage(this.data.author.picture, isOk.bind(this));
+};
 
-module.exports = addReview;
+/**
+ * снимает обработчики
+ */
+Review.prototype.remove = function() {
+  this.quizAnswerYes.removeEventListener('click', this.setAnswerYes);
+  this.quizAnswerNo.removeEventListener('click', this.setAnswerNo);
+};
+
+/**
+ * устанавливает ответ опроса
+ * @param {boolean} isYes
+ */
+Review.prototype.setQuizAnswer = function(isYes) {
+  this.quizAnswerYes.classList.toggle(this.ACTIVE_ANSWER, isYes);
+  this.quizAnswerNo.classList.toggle(this.ACTIVE_ANSWER, !isYes);
+};
+
+module.exports = Review;
