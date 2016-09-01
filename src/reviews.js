@@ -3,19 +3,28 @@
 var load = require('./load');
 var Review = require('./review');
 
+var URL = '/api/reviews';
+var PAGE_SIZE = 3;
+
+var dataIsLoading = false;
+var queryFilter = null;
+var pageNumber = 0;
+
 var reviewsFilter = document.querySelector('.reviews-filter');
+var reviewsMore = document.querySelector('.reviews-controls-more');
 
 /**
  * загружает список отзывов
  */
 function loadReviews() {
-  var URL = 'http://localhost:1506/api/reviews';
-
   // скрытие блока с фильтрами
   reviewsFilter.classList.add('invisible');
 
   // получение списка отзывов
-  load(URL, getReviews);
+  queryFilter = document.querySelector('input[name="reviews"]:checked').value;
+
+  pageNumber = 0;
+  getNextReviews();
 }
 
 /**
@@ -35,10 +44,10 @@ function loadReviews() {
  */
 
 /**
- * callback-функция получает отзывы из jsonp запроса
+ * callback-функция получает отзывы из запроса
  * @param {ReviewData[]} data отзывы
  */
-function getReviews(data) {
+function renderReviews(data) {
   var reviewsFragment = document.createDocumentFragment();
   var reviewsContainer = document.querySelector('.reviews-list');
 
@@ -53,6 +62,48 @@ function getReviews(data) {
 
   // отображение блока с фильтрами
   reviewsFilter.classList.remove('invisible');
+
+  // отображение кнопки Еще отзывы
+  var isLoaded = Boolean(data.length);
+  reviewsMore.classList.toggle('invisible', !isLoaded);
+
+  pageNumber++;
+  dataIsLoading = false;
 }
+
+/**
+ * загружает следующую страницу отзывов
+ */
+function getNextReviews() {
+  var query = {
+    from: pageNumber * PAGE_SIZE,
+    to: pageNumber * PAGE_SIZE + PAGE_SIZE,
+    filter: queryFilter
+  };
+
+  if (!dataIsLoading) {
+    load(URL, query, renderReviews);
+
+    dataIsLoading = true;
+  }
+}
+
+/**
+ * отфильтровывает отзывы
+ */
+function filterReviews(evt) {
+  evt.preventDefault();
+
+  var reviewsContainer = document.querySelector('.reviews-list');
+  queryFilter = evt.target.value;
+
+  reviewsContainer.innerHTML = '';
+
+  pageNumber = 0;
+  getNextReviews();
+}
+
+reviewsFilter.addEventListener('change', filterReviews, true);
+reviewsMore.addEventListener('click', getNextReviews);
 
 module.exports = loadReviews;

@@ -1,35 +1,45 @@
 'use strict';
 
-window.CallbackRegistry = {};
-
 /**
- * callback получает данные из jsonp запроса
- * @callback getData
- * @param {object} data набор данных
+ * объект с параметрами запроса
+ * @typedef {object} Query
+ * @property {string} from
+ * @property {string} to
+ * @property {string} filter
  */
 
+ /**
+  * callback получает данные из jsonp запроса
+  * @callback getData
+  * @param {object} data набор данных
+  */
+
 /**
- * выполняет jsonp запрос
+ * выполняет XMLHttpRequest запрос
  * @param {string} url адрес
- * @param {getData} callback данные из jsonp запроса
+ * @param {Query} query параметры запроса
+ * @param {getData} callback данные из запроса
  */
-function jsonp(url, cb) {
-  var script = document.createElement('script');
-  var callbackName = 'cb' + String(Math.floor(Math.random() * 999999));
+function httpRequest(url, query, cb) {
+  var xhr = new XMLHttpRequest();
 
-  url = url + '?callback=CallbackRegistry.' + callbackName;
-
-  window.CallbackRegistry[callbackName] = function(data) {
-    cb(data);
+  xhr.onload = function(evt) {
+    try {
+      var loadedData = JSON.parse(evt.target.response);
+      cb(loadedData);
+    } catch (err) {
+      console.log(err.message);
+    }
   };
 
-  script.onload = script.onerror = function() {
-    delete window.CallbackRegistry[callbackName];
-    document.body.removeChild(script);
-  };
+  var filter = Object.keys(query).map(function(key) {
+    return key + '=' + query[key];
+  });
 
-  script.src = url;
-  document.body.appendChild(script);
+  url += '?' + filter.join('&');
+
+  xhr.open('GET', url);
+  xhr.send();
 }
 
-module.exports = jsonp;
+module.exports = httpRequest;
