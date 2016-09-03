@@ -27,11 +27,6 @@ app.use(middleware);
 
 
 app.
-    get('/regenerate', (req, res) => {
-      reviews.regenerate().
-          then(() => res.sendStatus(200)).
-          catch(err => res.sendStatus(500));
-    }).
     get('/api/reviews', (req, res) => {
       reviews.read(req.query.filter, req.query.from, req.query.to).then((data) => {
         if (isJSONPRequest(req)) res.jsonp(data);
