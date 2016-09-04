@@ -1,5 +1,6 @@
 'use strict';
 
+var utils = require('./utils');
 
 /**
  * @const
@@ -262,11 +263,12 @@ var Game = function(container) {
   this._onKeyDown = this._onKeyDown.bind(this);
   this._onKeyUp = this._onKeyUp.bind(this);
   this._pauseListener = this._pauseListener.bind(this);
-  this._parallaxClouds = this._parallaxClouds.bind(this);
+
+  this.parallaxClouds = this.parallaxClouds.bind(this);
+  this.throttledСheckVisible = utils.throttle(this.checkVisible.bind(this), THROTTLE_TIMEOUT);
 
   this.clouds = document.querySelector('.header-clouds');
   this.demo = document.querySelector('.demo');
-  this.lastCall = null;
 
   this.setDeactivated(false);
 };
@@ -837,35 +839,41 @@ Game.prototype = {
   /**
    * праллакс облаков
    */
-  _parallaxClouds: function() {
-    // прошло время и игра за границей видимости
-    if (Date.now() - this.lastCall > THROTTLE_TIMEOUT && this.demo.getBoundingClientRect().bottom < 0) {
+  parallaxClouds: function() {
+    this.clouds.style.left = -window.pageYOffset + 'px';
+  },
+
+  /**
+   * проверяет видимость игры
+   */
+  checkVisible: function() {
+    // игра за границей видимости
+    if (this.demo.getBoundingClientRect().bottom < 0) {
 
       // игра не на паузе
       if (this.state.currentStatus !== Game.Verdict.PAUSE) {
         this.setGameStatus(Game.Verdict.PAUSE);
       }
 
+      window.removeEventListener('scroll', this.parallaxClouds);
+
       return;
     }
 
-    this.clouds.style.left = -window.pageYOffset + 'px';
-
-    this.lastCall = Date.now();
+    window.addEventListener('scroll', this.parallaxClouds);
   },
 
   /** @private */
   _initializeGameListeners: function() {
     window.addEventListener('keydown', this._onKeyDown);
     window.addEventListener('keyup', this._onKeyUp);
-    window.addEventListener('scroll', this._parallaxClouds);
+    window.addEventListener('scroll', this.throttledСheckVisible);
   },
 
   /** @private */
   _removeGameListeners: function() {
     window.removeEventListener('keydown', this._onKeyDown);
     window.removeEventListener('keyup', this._onKeyUp);
-    window.addEventListener('scroll', this._parallaxClouds);
   }
 };
 
