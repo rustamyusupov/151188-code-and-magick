@@ -10,8 +10,8 @@ var formOpenButton = document.querySelector('.reviews-controls-new');
 var galleryLinks = document.querySelectorAll('.photogallery-image');
 var galleryImages = document.querySelectorAll('.photogallery-image img');
 
-formOpenButton.onclick = function(event) {
-  event.preventDefault();
+formOpenButton.onclick = function(evt) {
+  evt.preventDefault();
 
   form.open(function() {
     game.setGameStatus(Game.Verdict.PAUSE);

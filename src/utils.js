@@ -58,8 +58,27 @@ function loadImage(url, cb) {
   }, IMAGE_LOAD_TIMEOUT);
 }
 
+/**
+ * тормозит выполнение функции
+ * @param {function} func
+ * @param {number} delay задержка
+ * @returns {function}
+ */
+function throttle(func, delay) {
+  var lastCall = null;
+
+  return function() {
+    if (new Date() - lastCall > delay) {
+      func();
+
+      lastCall = new Date();
+    }
+  };
+}
+
 module.exports = {
   toggle: toggle,
   getDaysFromDate: getDaysFromDate,
-  loadImage: loadImage
+  loadImage: loadImage,
+  throttle: throttle
 };
