@@ -30,7 +30,7 @@
   "scripts": {
     "build": "webpack --config ./bin/webpack.config.js",
     "start": "node ./bin/server.js",
-    "test": "eslint src",
+    "test": "eslint src bin/data",
     "unittest": "node tests/lib/index.js"
   },
   "engines": {
