@@ -35,8 +35,8 @@ var form = {
     validate();
   },
 
-  close: function(event) {
-    event.preventDefault();
+  close: function(evt) {
+    evt.preventDefault();
 
     formContainer.classList.add('invisible');
 
