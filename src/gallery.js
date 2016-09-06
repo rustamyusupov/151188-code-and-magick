@@ -1,5 +1,8 @@
 'use strict';
 
+var DOMComponent = require('./dom-component');
+var utils = require('./utils');
+
 /**
  * конструктор объекта Gallery
  * @param {string[]} pictures
@@ -14,15 +17,19 @@ var Gallery = function(pictures) {
   this.hideGallery = this.hide.bind(this);
 
   this.container = document.querySelector('.overlay-gallery');
-  this.preview = this.container.querySelector('.overlay-gallery-preview');
-  this.close = this.container.querySelector('.overlay-gallery-close');
-  this.controlLeft = this.container.querySelector('.overlay-gallery-control-left');
-  this.controlRight = this.container.querySelector('.overlay-gallery-control-right');
-  this.currentNumber = this.container.querySelector('.preview-number-current');
-  this.totalNumber = this.container.querySelector('.preview-number-total');
+  DOMComponent.call(this, this.container);
+
+  this.preview = this.element.querySelector('.overlay-gallery-preview');
+  this.close = this.element.querySelector('.overlay-gallery-close');
+  this.controlLeft = this.element.querySelector('.overlay-gallery-control-left');
+  this.controlRight = this.element.querySelector('.overlay-gallery-control-right');
+  this.currentNumber = this.element.querySelector('.preview-number-current');
+  this.totalNumber = this.element.querySelector('.preview-number-total');
 
   this.totalNumber.innerHTML = pictures.length;
 };
+
+utils.inherit(DOMComponent, Gallery);
 
 /**
  * показывает галерею
@@ -33,7 +40,7 @@ Gallery.prototype.show = function(activePicture) {
   this.controlLeft.addEventListener('click', this.setPrev);
   this.controlRight.addEventListener('click', this.setNext);
 
-  this.container.classList.remove('invisible');
+  this.element.classList.remove('invisible');
 
   this.setActivePicture(activePicture);
 };
@@ -42,7 +49,7 @@ Gallery.prototype.show = function(activePicture) {
  * скрывает галерею
  */
 Gallery.prototype.hide = function() {
-  this.container.classList.add('invisible');
+  this.element.classList.add('invisible');
 
   this.close.removeEventListener('click', this.hideGallery);
   this.controlLeft.removeEventListener('click', this.setPrev);
