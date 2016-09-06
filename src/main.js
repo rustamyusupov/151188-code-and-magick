@@ -1,32 +1,37 @@
 'use strict';
 
-var form = require('./form');
+var Form = require('./form');
 var Game = require('./game');
-var loadReviews = require('./reviews');
+var Reviews = require('./reviews');
 var Gallery = require('./gallery');
 
+var reviews = new Reviews();
 var game = new Game(document.querySelector('.demo'));
 var formOpenButton = document.querySelector('.reviews-controls-new');
 var galleryLinks = document.querySelectorAll('.photogallery-image');
 var galleryImages = document.querySelectorAll('.photogallery-image img');
 
-formOpenButton.onclick = function(evt) {
+function openForm(evt) {
   evt.preventDefault();
 
   form.open(function() {
     game.setGameStatus(Game.Verdict.PAUSE);
     game.setDeactivated(true);
   });
-};
+}
 
-form.onClose = function() {
+function onClose() {
   game.setDeactivated(false);
-};
+}
+
+var form = new Form(onClose);
+
+formOpenButton.addEventListener('click', openForm);
 
 game.initializeLevelAndStart();
 game.setGameStatus(Game.Verdict.INTRO);
 
-loadReviews();
+reviews.load();
 
 var pictures = Array.prototype.map.call(galleryImages, function(item) {
   return item.src;

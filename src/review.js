@@ -1,6 +1,7 @@
 'use strict';
 
 var utils = require('./utils');
+
 var reviewTemplate = document.getElementById('review-template');
 var reviewClone = (reviewTemplate.content || reviewTemplate).querySelector('.review');
 
@@ -27,7 +28,6 @@ var reviewClone = (reviewTemplate.content || reviewTemplate).querySelector('.rev
  */
 var Review = function(data) {
   this.data = data;
-
   this.getElements();
 
   this.setAnswerYes = this.setQuizAnswer.bind(this, true);
@@ -42,10 +42,21 @@ var Review = function(data) {
 };
 
 /**
- * константы
+ * @const
+ * @type {string}
  */
 Review.prototype.IMAGE_SIZE = '124px';
+
+/**
+ * @const
+ * @type {string}
+ */
 Review.prototype.LOAD_FAILURE = 'review-load-failure';
+
+/**
+ * @const
+ * @type {string}
+ */
 Review.prototype.ACTIVE_ANSWER = 'review-quiz-answer-active';
 
 /**
