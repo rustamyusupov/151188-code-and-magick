@@ -20,6 +20,13 @@ function loadReviews() {
   // скрытие блока с фильтрами
   reviewsFilter.classList.add('invisible');
 
+  // установка фильтра
+  var filter = document.querySelector('#' + loadFilter());
+
+  if (filter) {
+    filter.checked = true;
+  }
+
   // получение списка отзывов
   queryFilter = document.querySelector('input[name="reviews"]:checked').value;
 
@@ -101,6 +108,25 @@ function filterReviews(evt) {
 
   pageNumber = 0;
   getNextReviews();
+
+  saveFilter(queryFilter);
+}
+
+/**
+ * сохраняет фильтр
+ * @param {string} filter
+ */
+function saveFilter(filter) {
+  localStorage.setItem('filter', filter);
+}
+
+/**
+ * загружает фильтр
+ * @param {string} filter
+ * @returns {string}
+ */
+function loadFilter() {
+  return localStorage.getItem('filter');
 }
 
 reviewsFilter.addEventListener('change', filterReviews, true);
