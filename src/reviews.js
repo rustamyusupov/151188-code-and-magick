@@ -3,36 +3,50 @@
 var load = require('./load');
 var Review = require('./review');
 
-var URL = '/api/reviews';
-var PAGE_SIZE = 3;
+var Reviews = function() {
+  this.reviewsFilter = document.querySelector('.reviews-filter');
+  this.reviewsMore = document.querySelector('.reviews-controls-more');
 
-var dataIsLoading = false;
-var queryFilter = null;
-var pageNumber = 0;
+  this.dataIsLoading = false;
+  this.queryFilter = null;
+  this.pageNumber = 0;
 
-var reviewsFilter = document.querySelector('.reviews-filter');
-var reviewsMore = document.querySelector('.reviews-controls-more');
+  this.filter = this.filter.bind(this);
+  this.next = this.next.bind(this);
+
+  this.reviewsFilter.addEventListener('change', this.filter, true);
+  this.reviewsMore.addEventListener('click', this.next);
+};
+
+/**
+ * @const
+ * @type {string}
+ */
+Reviews.prototype.URL = '/api/reviews';
+
+/**
+ * @const
+ * @type {number}
+ */
+Reviews.prototype.PAGE_SIZE = 3;
 
 /**
  * загружает список отзывов
  */
-function loadReviews() {
+Reviews.prototype.load = function() {
   // скрытие блока с фильтрами
-  reviewsFilter.classList.add('invisible');
+  this.reviewsFilter.classList.add('invisible');
 
   // установка фильтра
-  var filter = document.querySelector('#' + loadFilter());
-
-  if (filter) {
-    filter.checked = true;
-  }
+  var filter = document.querySelector('#' + this.loadFilter());
+  filter.checked = true;
 
   // получение списка отзывов
-  queryFilter = document.querySelector('input[name="reviews"]:checked').value;
+  this.queryFilter = document.querySelector('input[name="reviews"]:checked').value;
 
-  pageNumber = 0;
-  getNextReviews();
-}
+  this.pageNumber = 0;
+  this.next();
+};
 
 /**
  * объект с параметрами автора
@@ -54,7 +68,7 @@ function loadReviews() {
  * callback-функция получает отзывы из запроса
  * @param {ReviewData[]} data отзывы
  */
-function renderReviews(data) {
+Reviews.prototype.render = function(data) {
   var reviewsFragment = document.createDocumentFragment();
   var reviewsContainer = document.querySelector('.reviews-list');
 
@@ -68,68 +82,65 @@ function renderReviews(data) {
   reviewsContainer.appendChild(reviewsFragment);
 
   // отображение блока с фильтрами
-  reviewsFilter.classList.remove('invisible');
+  this.reviewsFilter.classList.remove('invisible');
 
   // отображение кнопки Еще отзывы
   var isLoaded = Boolean(data.length);
-  reviewsMore.classList.toggle('invisible', !isLoaded);
+  this.reviewsMore.classList.toggle('invisible', !isLoaded);
 
-  pageNumber++;
-  dataIsLoading = false;
-}
+  this.pageNumber++;
+  this.dataIsLoading = false;
+};
 
 /**
  * загружает следующую страницу отзывов
  */
-function getNextReviews() {
+Reviews.prototype.next = function() {
   var query = {
-    from: pageNumber * PAGE_SIZE,
-    to: pageNumber * PAGE_SIZE + PAGE_SIZE,
-    filter: queryFilter
+    from: this.pageNumber * this.PAGE_SIZE,
+    to: this.PAGE_SIZE * (this.pageNumber + 1),
+    filter: this.queryFilter
   };
 
-  if (!dataIsLoading) {
-    load(URL, query, renderReviews);
+  if (!this.dataIsLoading) {
+    load(this.URL, query, this.render.bind(this));
 
-    dataIsLoading = true;
+    this.dataIsLoading = true;
   }
-}
+};
 
 /**
  * отфильтровывает отзывы
  */
-function filterReviews(evt) {
+Reviews.prototype.filter = function(evt) {
   evt.preventDefault();
 
   var reviewsContainer = document.querySelector('.reviews-list');
-  queryFilter = evt.target.value;
+  this.queryFilter = evt.target.value;
 
   reviewsContainer.innerHTML = '';
 
-  pageNumber = 0;
-  getNextReviews();
+  this.pageNumber = 0;
+  this.next();
 
-  saveFilter(queryFilter);
-}
+  this.saveFilter(this.queryFilter);
+};
 
 /**
  * сохраняет фильтр
  * @param {string} filter
  */
-function saveFilter(filter) {
+Reviews.prototype.saveFilter = function(filter) {
   localStorage.setItem('filter', filter);
-}
+};
 
 /**
- * загружает фильтр
+ * сохраняет фильтр
  * @param {string} filter
  * @returns {string}
  */
-function loadFilter() {
+Reviews.prototype.loadFilter = function() {
   return localStorage.getItem('filter');
-}
+};
 
-reviewsFilter.addEventListener('change', filterReviews, true);
-reviewsMore.addEventListener('click', getNextReviews);
-
-module.exports = loadReviews;
+module.exports = Reviews;

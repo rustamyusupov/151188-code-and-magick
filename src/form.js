@@ -1,85 +1,115 @@
 'use strict';
 
 var utils = require('./utils');
-
-var formContainer = document.querySelector('.overlay-container');
-var formCloseButton = document.querySelector('.review-form-close');
-var reviewForm = formContainer.querySelector('.review-form');
-var reviewMarks = reviewForm.elements['review-mark'];
-var reviewName = reviewForm.elements['review-name'];
-var reviewText = reviewForm.elements['review-text'];
-var btnReviewSubmit = reviewForm.querySelector('.review-submit');
-var reviewFields = reviewForm.querySelector('.review-fields');
-var reviewFieldsName = reviewForm.querySelector('.review-fields-name');
-var reviewFieldsText = reviewForm.querySelector('.review-fields-text');
 var browserCookies = require('browser-cookies');
-var MARK = 'review-mark';
-var NAME = 'review-name';
-var reviewMarksArray = Array.prototype.slice.call(reviewMarks, 0);
 
-var form = {
-  onClose: null,
+/**
+ * конструктор объекта Form
+ * @param {function} onClose
+ * @constructor
+ */
+var Form = function(onClose) {
+  this.container = document.querySelector('.overlay-container');
+  this.closeButton = document.querySelector('.review-form-close');
+  this.reviewForm = this.container.querySelector('.review-form');
+  this.reviewMarks = this.reviewForm.elements['review-mark'];
+  this.reviewName = this.reviewForm.elements['review-name'];
+  this.reviewText = this.reviewForm.elements['review-text'];
+  this.reviewSubmit = this.reviewForm.querySelector('.review-submit');
+  this.reviewFields = this.reviewForm.querySelector('.review-fields');
+  this.reviewFieldsName = this.reviewForm.querySelector('.review-fields-name');
+  this.reviewFieldsText = this.reviewForm.querySelector('.review-fields-text');
+  this.reviewMarksArray = Array.prototype.slice.call(this.reviewMarks, 0);
 
-  /**
-   * @param {Function} cb
-   */
-  open: function(cb) {
-    formContainer.classList.remove('invisible');
+  this.onClose = onClose;
 
-    if (typeof cb === 'function') {
-      cb();
-    }
+  this.validate = this.validate.bind(this);
+  this.close = this.close.bind(this);
 
-    loadData();
+  this.reviewMarksArray.forEach(function(item) {
+    item.addEventListener('change', this.validate);
+  }, this);
+  this.reviewName.addEventListener('input', this.validate);
+  this.reviewText.addEventListener('input', this.validate);
+  this.closeButton.addEventListener('click', this.close);
+};
 
-    validate();
-  },
+/**
+ * @const
+ * @type {string}
+ */
+Form.prototype.MARK = 'review-mark';
 
-  close: function(evt) {
-    evt.preventDefault();
+/**
+ * @const
+ * @type {string}
+ */
+Form.prototype.NAME = 'review-name';
 
-    formContainer.classList.add('invisible');
+/**
+ * открывает форму
+ * @param {function} cb
+ */
+Form.prototype.open = function(cb) {
+  this.container.classList.remove('invisible');
 
-    if (typeof form.onClose === 'function') {
-      form.onClose();
-    }
-
-    saveData();
+  if (typeof cb === 'function') {
+    cb();
   }
+
+  this.loadData();
+
+  this.validate();
+};
+
+/**
+ * закрывает форму
+ * @param {object} evt
+ */
+Form.prototype.close = function(evt) {
+  evt.preventDefault();
+
+  this.container.classList.add('invisible');
+
+  if (typeof this.onClose === 'function') {
+    this.onClose();
+  }
+
+  this.saveData();
 };
 
 /**
  * валидирует форму
  */
-function validate() {
+Form.prototype.validate = function() {
   // поле имя
-  reviewName.required = true;
-  var isNameValid = Boolean(reviewName.value);
-  utils.toggle(reviewFieldsName, !isNameValid);
+  this.reviewName.required = true;
+  var isNameValid = Boolean(this.reviewName.value);
+  utils.toggle(this.reviewFieldsName, !isNameValid);
 
   // звезды и поле отзыв
-  reviewText.required = reviewMarks.value < 3;
-  var isTextValid = !reviewText.required || reviewText.value;
-  utils.toggle(reviewFieldsText, !isTextValid);
+  this.reviewText.required = this.reviewMarks.value < 3;
+  var isTextValid = !this.reviewText.required || this.reviewText.value;
+  utils.toggle(this.reviewFieldsText, !isTextValid);
 
   // кнопка добавить и ссылки
   var isFieldsValid = isNameValid && isTextValid;
-  btnReviewSubmit.disabled = !isFieldsValid;
-  utils.toggle(reviewFields, !isFieldsValid);
-}
+  this.reviewSubmit.disabled = !isFieldsValid;
+  utils.toggle(this.reviewFields, !isFieldsValid);
+};
 
 /**
  * загружает данные из кук
  */
-function loadData() {
-  reviewMarks.value = browserCookies.get(MARK) || reviewMarks.value;
-  reviewName.value = browserCookies.get(NAME) || reviewName.value;
-}
+Form.prototype.loadData = function() {
+  this.reviewMarks.value = browserCookies.get(this.MARK) || this.reviewMarks.value;
+  this.reviewName.value = browserCookies.get(this.NAME) || this.reviewName.value;
+};
 
 /**
  * сохраняет данные формы в куки
  */
-function saveData() {
+Form.prototype.saveData = function() {
   var today = new Date();
 
   // день рождения Грейс Хоппер
@@ -88,15 +118,8 @@ function saveData() {
     expires: utils.getDaysFromDate(birthdayGraceHopper)
   };
 
-  browserCookies.set(MARK, reviewMarks.value, options);
-  browserCookies.set(NAME, reviewName.value, options);
-}
+  browserCookies.set(this.MARK, this.reviewMarks.value, options);
+  browserCookies.set(this.NAME, this.reviewName.value, options);
+};
 
-reviewMarksArray.forEach(function(item) {
-  item.addEventListener('change', validate);
-});
-reviewName.addEventListener('input', validate);
-reviewText.addEventListener('input', validate);
-formCloseButton.addEventListener('click', form.close);
-
-module.exports = form;
+module.exports = Form;
