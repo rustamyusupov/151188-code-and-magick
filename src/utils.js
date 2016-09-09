@@ -76,9 +76,23 @@ function throttle(func, delay) {
   };
 }
 
+
+/**
+ * наследует класс
+ * @param {object} Parent
+ * @param {object} Child
+ */
+function inherit(Parent, Child) {
+  function Constructor() {}
+
+  Constructor.prototype = Parent.prototype;
+  Child.prototype = new Constructor();
+}
+
 module.exports = {
   toggle: toggle,
   getDaysFromDate: getDaysFromDate,
   loadImage: loadImage,
-  throttle: throttle
+  throttle: throttle,
+  inherit: inherit
 };

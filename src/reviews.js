@@ -3,6 +3,11 @@
 var load = require('./load');
 var Review = require('./review');
 
+/**
+ * @type {array}
+ */
+var arrReviews = [];
+
 var Reviews = function() {
   this.reviewsFilter = document.querySelector('.reviews-filter');
   this.reviewsMore = document.querySelector('.reviews-controls-more');
@@ -75,7 +80,10 @@ Reviews.prototype.render = function(data) {
   // добавление отзывов
   data.forEach(function(item) {
     var review = new Review(item);
-    reviewsFragment.appendChild(review.element);
+
+    review.add(reviewsFragment);
+
+    arrReviews.push(review);
   });
 
   // вставка отзывов
@@ -115,10 +123,13 @@ Reviews.prototype.next = function() {
 Reviews.prototype.filter = function(evt) {
   evt.preventDefault();
 
-  var reviewsContainer = document.querySelector('.reviews-list');
   this.queryFilter = evt.target.value;
 
-  reviewsContainer.innerHTML = '';
+  arrReviews.forEach(function(item) {
+    item.remove();
+  });
+
+  arrReviews = [];
 
   this.pageNumber = 0;
   this.next();

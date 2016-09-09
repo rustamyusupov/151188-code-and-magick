@@ -1,5 +1,6 @@
 'use strict';
 
+var DOMComponent = require('./dom-component');
 var utils = require('./utils');
 
 var reviewTemplate = document.getElementById('review-template');
@@ -28,7 +29,8 @@ var reviewClone = (reviewTemplate.content || reviewTemplate).querySelector('.rev
  */
 var Review = function(data) {
   this.data = data;
-  this.getElements();
+
+  DOMComponent.call(this, this.getElements());
 
   this.setAnswerYes = this.setQuizAnswer.bind(this, true);
   this.setAnswerNo = this.setQuizAnswer.bind(this, false);
@@ -40,6 +42,8 @@ var Review = function(data) {
   this.quizAnswerYes.addEventListener('click', this.setAnswerYes);
   this.quizAnswerNo.addEventListener('click', this.setAnswerNo);
 };
+
+utils.inherit(DOMComponent, Review);
 
 /**
  * @const
@@ -69,6 +73,8 @@ Review.prototype.getElements = function() {
   this.rating = this.element.querySelector('.review-rating');
   this.quizAnswerYes = this.element.querySelector('.review-quiz-answer-yes');
   this.quizAnswerNo = this.element.querySelector('.review-quiz-answer-no');
+
+  return this.element;
 };
 
 /**
@@ -107,6 +113,8 @@ Review.prototype.loadImage = function() {
 Review.prototype.remove = function() {
   this.quizAnswerYes.removeEventListener('click', this.setAnswerYes);
   this.quizAnswerNo.removeEventListener('click', this.setAnswerNo);
+
+  DOMComponent.prototype.remove.call(this);
 };
 
 /**
