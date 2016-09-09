@@ -1,26 +1,11 @@
 'use strict';
 
 var DOMComponent = require('./dom-component');
+var ReviewData = require('./review-data');
 var utils = require('./utils');
 
 var reviewTemplate = document.getElementById('review-template');
 var reviewClone = (reviewTemplate.content || reviewTemplate).querySelector('.review');
-
-/**
- * объект с параметрами автора
- * @typedef {object} Author
- * @property {string} name имя
- * @property {string} picture адрес изображения
- */
-
-/**
- * объект с параметрами отзыва
- * @typedef {object} ReviewData
- * @property {Author} author автор
- * @property {string} decription описание
- * @property {number} rating оценка
- * @property {number} review_usefulness польза
- */
 
 /**
  * конструктор объекта Review
@@ -28,15 +13,15 @@ var reviewClone = (reviewTemplate.content || reviewTemplate).querySelector('.rev
  * @constructor
  */
 var Review = function(data) {
-  this.data = data;
+  this.data = new ReviewData(data);
 
   DOMComponent.call(this, this.getElements());
 
   this.setAnswerYes = this.setQuizAnswer.bind(this, true);
   this.setAnswerNo = this.setQuizAnswer.bind(this, false);
 
-  this.description.textContent = this.data.description;
-  this.setRating(this.data.rating);
+  this.description.textContent = this.data.getDescription();
+  this.setRating(this.data.getRating());
   this.loadImage();
 
   this.quizAnswerYes.addEventListener('click', this.setAnswerYes);
@@ -65,6 +50,7 @@ Review.prototype.ACTIVE_ANSWER = 'review-quiz-answer-active';
 
 /**
  * получает элементы
+ * @returns {HTMLElement}
  */
 Review.prototype.getElements = function() {
   this.element = reviewClone.cloneNode(true);
@@ -96,7 +82,7 @@ Review.prototype.setRating = function(number) {
 Review.prototype.loadImage = function() {
   function isOk(isLoad) {
     if (isLoad) {
-      this.image.src = this.data.author.picture;
+      this.image.src = this.data.getAuthorPicture();
       this.image.width = this.image.height = this.IMAGE_SIZE;
     } else {
       this.image.src = '';
@@ -104,7 +90,7 @@ Review.prototype.loadImage = function() {
     }
   }
 
-  utils.loadImage(this.data.author.picture, isOk.bind(this));
+  utils.loadImage(this.data.getAuthorPicture(), isOk.bind(this));
 };
 
 /**
@@ -124,6 +110,8 @@ Review.prototype.remove = function() {
 Review.prototype.setQuizAnswer = function(isYes) {
   this.quizAnswerYes.classList.toggle(this.ACTIVE_ANSWER, isYes);
   this.quizAnswerNo.classList.toggle(this.ACTIVE_ANSWER, !isYes);
+
+  this.data.setUsefulness(isYes);
 };
 
 module.exports = Review;
