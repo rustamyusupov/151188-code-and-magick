@@ -19,6 +19,7 @@ var Review = function(data) {
 
   this.setAnswerYes = this.setQuizAnswer.bind(this, true);
   this.setAnswerNo = this.setQuizAnswer.bind(this, false);
+  this.setActiveAnswer = this.setActiveAnswer.bind(this);
 
   this.description.textContent = this.data.getDescription();
   this.setRating(this.data.getRating());
@@ -26,6 +27,8 @@ var Review = function(data) {
 
   this.quizAnswerYes.addEventListener('click', this.setAnswerYes);
   this.quizAnswerNo.addEventListener('click', this.setAnswerNo);
+
+  document.addEventListener('changeUsefulness', this.setActiveAnswer);
 };
 
 utils.inherit(DOMComponent, Review);
@@ -104,14 +107,24 @@ Review.prototype.remove = function() {
 };
 
 /**
- * устанавливает ответ опроса
+ * устанавливает ответ опроса в объекте
  * @param {boolean} isYes
  */
 Review.prototype.setQuizAnswer = function(isYes) {
-  this.quizAnswerYes.classList.toggle(this.ACTIVE_ANSWER, isYes);
-  this.quizAnswerNo.classList.toggle(this.ACTIVE_ANSWER, !isYes);
-
   this.data.setUsefulness(isYes);
+};
+
+/**
+ * устанавливает ответ опроса у элемента
+ * @param {object} evt
+ */
+Review.prototype.setActiveAnswer = function(evt) {
+  if (this.data !== evt.detail.element) {
+    return;
+  }
+
+  this.quizAnswerYes.classList.toggle(this.ACTIVE_ANSWER, evt.detail.usefulness);
+  this.quizAnswerNo.classList.toggle(this.ACTIVE_ANSWER, !evt.detail.usefulness);
 };
 
 module.exports = Review;

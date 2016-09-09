@@ -107,6 +107,16 @@ ReviewData.prototype.setUsefulness = function(isUp) {
   } else {
     this.review_usefulness--;
   }
+
+  var usefulnessEvent = new CustomEvent('changeUsefulness', {
+    bubbles: true,
+    detail: {
+      usefulness: isUp,
+      element: this
+    }
+  });
+
+  document.dispatchEvent(usefulnessEvent);
 };
 
 module.exports = ReviewData;
