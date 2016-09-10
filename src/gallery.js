@@ -14,7 +14,7 @@ var Gallery = function(pictures) {
   this.currentPicture = null;
   this.setPrev = this.setPrevPicture.bind(this);
   this.setNext = this.setNextPicture.bind(this);
-  this.hideGallery = this.hide.bind(this);
+  this.setLocation = this.setLocation.bind(this);
 
   this.container = document.querySelector('.overlay-gallery');
   DOMComponent.call(this, this.container);
@@ -27,22 +27,25 @@ var Gallery = function(pictures) {
   this.totalNumber = this.element.querySelector('.preview-number-total');
 
   this.totalNumber.innerHTML = pictures.length;
+
+  window.addEventListener('hashchange', this.change.bind(this));
+
+  this.change();
 };
 
 utils.inherit(DOMComponent, Gallery);
 
 /**
  * показывает галерею
- * @param {number} activePicture
  */
-Gallery.prototype.show = function(activePicture) {
-  this.close.addEventListener('click', this.hideGallery);
+Gallery.prototype.show = function(hash) {
+  this.close.addEventListener('click', this.setLocation);
   this.controlLeft.addEventListener('click', this.setPrev);
   this.controlRight.addEventListener('click', this.setNext);
 
   this.element.classList.remove('invisible');
 
-  this.setActivePicture(activePicture);
+  this.setActivePicture(hash);
 };
 
 /**
@@ -51,7 +54,7 @@ Gallery.prototype.show = function(activePicture) {
 Gallery.prototype.hide = function() {
   this.element.classList.add('invisible');
 
-  this.close.removeEventListener('click', this.hideGallery);
+  this.close.removeEventListener('click', this.setLocation);
   this.controlLeft.removeEventListener('click', this.setPrev);
   this.controlRight.removeEventListener('click', this.setNext);
 };
@@ -63,8 +66,17 @@ Gallery.prototype.hide = function() {
 Gallery.prototype.setActivePicture = function(activePicture) {
   var image = new Image();
 
-  this.activePicture = activePicture;
-  image.src = this.pictures[activePicture];
+  if (typeof activePicture === 'string') {
+    activePicture = this.pictures.indexOf(activePicture);
+  }
+
+  if (activePicture !== -1) {
+    this.activePicture = activePicture;
+  } else {
+    return;
+  }
+
+  image.src = this.pictures[this.activePicture];
 
   if (this.currentPicture) {
     this.preview.replaceChild(image, this.currentPicture);
@@ -81,7 +93,7 @@ Gallery.prototype.setActivePicture = function(activePicture) {
  */
 Gallery.prototype.setNextPicture = function() {
   if (this.activePicture + 1 < this.pictures.length) {
-    this.setActivePicture(this.activePicture + 1);
+    this.setLocation(this.activePicture + 1);
   }
 };
 
@@ -90,8 +102,49 @@ Gallery.prototype.setNextPicture = function() {
  */
 Gallery.prototype.setPrevPicture = function() {
   if (this.activePicture - 1 >= 0) {
-    this.setActivePicture(this.activePicture - 1);
+    this.setLocation(this.activePicture - 1);
   }
+};
+
+/**
+ * меняет состояние галереи
+ */
+Gallery.prototype.change = function() {
+  var hash = this.getLocation();
+
+  if (hash) {
+    this.show(hash);
+  } else {
+    this.hide();
+  }
+};
+
+/**
+ * получает изображение из локейшена
+ * @returns {string}
+ */
+Gallery.prototype.getLocation = function() {
+  var url = location.hash.match(/#photo\/(\S+)/);
+
+  if (url) {
+    return url[1];
+  }
+
+  return null;
+};
+
+/**
+ * устанавливает изображение в локейшен
+ * @param {string} activePicture
+ */
+Gallery.prototype.setLocation = function(activePicture) {
+  var url = '';
+
+  if (activePicture >= 0) {
+    url = 'photo/' + this.pictures[activePicture];
+  }
+
+  location.hash = url;
 };
 
 module.exports = Gallery;
