@@ -34,11 +34,11 @@ game.setGameStatus(Game.Verdict.INTRO);
 reviews.load();
 
 var pictures = Array.prototype.map.call(galleryImages, function(item) {
-  return item.src;
+  return item.getAttribute('src');
 });
 
 var gallery = new Gallery(pictures);
 
 Array.prototype.forEach.call(galleryLinks, function(item, i) {
-  item.addEventListener('click', gallery.show.bind(gallery, i));
+  item.addEventListener('click', gallery.setLocation.bind(gallery, i));
 });
