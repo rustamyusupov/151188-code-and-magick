@@ -22,7 +22,11 @@
  * @constructor
  */
 var ReviewData = function(data) {
-  Object.assign(this, data);
+  for (var key in data) {
+    if (data.hasOwnProperty(key)) {
+      this[key] = data[key];
+    }
+  }
 };
 
 /**
