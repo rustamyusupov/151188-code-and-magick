@@ -44,7 +44,9 @@ Reviews.prototype.load = function() {
 
   // установка фильтра
   var filter = document.querySelector('#' + this.loadFilter());
-  filter.checked = true;
+  if (filter) {
+    filter.checked = true;
+  }
 
   // получение списка отзывов
   this.queryFilter = document.querySelector('input[name="reviews"]:checked').value;

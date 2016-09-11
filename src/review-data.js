@@ -22,7 +22,11 @@
  * @constructor
  */
 var ReviewData = function(data) {
-  Object.assign(this, data);
+  for (var key in data) {
+    if (Object.keys(key)) {
+      this[key] = data[key];
+    }
+  }
 };
 
 /**
