@@ -12,21 +12,20 @@ var Form = function(onClose) {
   this.container = document.querySelector('.overlay-container');
   this.closeButton = document.querySelector('.review-form-close');
   this.reviewForm = this.container.querySelector('.review-form');
-  this.reviewMarks = this.reviewForm.elements['review-mark'];
+  this.reviewMarks = this.reviewForm.querySelectorAll('input[name=review-mark]');
   this.reviewName = this.reviewForm.elements['review-name'];
   this.reviewText = this.reviewForm.elements['review-text'];
   this.reviewSubmit = this.reviewForm.querySelector('.review-submit');
   this.reviewFields = this.reviewForm.querySelector('.review-fields');
   this.reviewFieldsName = this.reviewForm.querySelector('.review-fields-name');
   this.reviewFieldsText = this.reviewForm.querySelector('.review-fields-text');
-  this.reviewMarksArray = Array.prototype.slice.call(this.reviewMarks, 0);
 
   this.onClose = onClose;
 
   this.validate = this.validate.bind(this);
   this.close = this.close.bind(this);
 
-  this.reviewMarksArray.forEach(function(item) {
+  Array.prototype.forEach.call(this.reviewMarks, function(item) {
     item.addEventListener('change', this.validate);
   }, this);
   this.reviewName.addEventListener('input', this.validate);
@@ -88,7 +87,7 @@ Form.prototype.validate = function() {
   utils.toggle(this.reviewFieldsName, !isNameValid);
 
   // звезды и поле отзыв
-  this.reviewText.required = this.reviewMarks.value < 3;
+  this.reviewText.required = this.getMarks() < 3;
   var isTextValid = !this.reviewText.required || this.reviewText.value;
   utils.toggle(this.reviewFieldsText, !isTextValid);
 
@@ -102,7 +101,7 @@ Form.prototype.validate = function() {
  * загружает данные из кук
  */
 Form.prototype.loadData = function() {
-  this.reviewMarks.value = browserCookies.get(this.MARK) || this.reviewMarks.value;
+  this.setMarks( Number(browserCookies.get(this.MARK)) );
   this.reviewName.value = browserCookies.get(this.NAME) || this.reviewName.value;
 };
 
@@ -118,8 +117,31 @@ Form.prototype.saveData = function() {
     expires: utils.getDaysFromDate(birthdayGraceHopper)
   };
 
-  browserCookies.set(this.MARK, this.reviewMarks.value, options);
+
+  browserCookies.set(this.MARK, this.getMarks(), options);
   browserCookies.set(this.NAME, this.reviewName.value, options);
+};
+
+Form.prototype.getMarks = function() {
+  var marks = this.reviewForm.querySelector('input[name=review-mark]:checked').value;
+
+  if (marks) {
+    return marks;
+  }
+
+  return 0;
+};
+
+Form.prototype.setMarks = function(marks) {
+  if (!marks) {
+    return;
+  }
+
+  var reviewMark = this.reviewForm.querySelector('#review-mark-' + marks);
+
+  if (reviewMark) {
+    reviewMark.checked = true;
+  }
 };
 
 module.exports = Form;
